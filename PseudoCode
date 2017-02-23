@@ -1,4 +1,5 @@
--Function that takes hand cards and dealer (you or opponent) as inputs, picks hand of highest expected value, and outputs the 4 cards that compose hand of highest value (or the 2 discards which would leave the optimized hand)
+-Function that takes hand cards and dealer (you or opponent) as inputs, picks hand of highest expected value, and outputs
+the 4 cards that compose hand of highest value (or the 2 discards which would leave the optimized hand)
 
 
 A1. uses two (sub?)functions to evaluate 
@@ -16,7 +17,9 @@ B2.B: Function that evaluates points earned by all possible 5-card hands
 
 
 C1: 5-Card hand point evaluation function (690 inputs, 15 outputs)
-Takes hands of 5 from G1.A, runs its subfunctions on each hand, and sums the outputs of those subfunctions that correspond to a 4-card group, then divides each sum by 46, creates a new variable defined as the expected score of that 4-card group, and outputs those 15 variables to master function (or whichever one ends up adding the expected score from the hand and crib)
+Takes hands of 5 from G1.A, runs its subfunctions on each hand, and sums the outputs of those subfunctions that correspond to
+a 4-card group, then divides each sum by 46, creates a new variable defined as the expected score of that 4-card group, and
+outputs those 15 variables to master function (or whichever one ends up adding the expected score from the hand and crib)
      Subfuctions:
 15-counter
 Pair counter
@@ -32,7 +35,9 @@ Groups 6 hand cards into 15 groups of 4 cards, and puts all 15 groups in a 15 x 
 
 
 G1.A (15 inputs, 690 outputs)
-Pairs each of 15 groups of 4 cards with each of 46 possible cut cards (by running B2.B) to make 690 possible hands of 5, each defined as offspring of its parent hand of 4, outputs these hands to C1
+Pairs each of 15 groups of 4 cards with each of 46 possible cut cards (by running B2.B) to make 690 possible hands of 5,
+each defined as offspring of its parent hand of 4, outputs these hands to C1
 
 
-Make for loop that counts hand value of each column in the 15 x 4 array for a pairing with each card in the cut array. At the end of each iteration of the loop it will add a number to the 1 x 15 array in the corresponding column. 
+Make for loop that counts hand value of each column in the 15 x 4 array for a pairing with each card in the cut array.
+At the end of each iteration of the loop it will add a number to the 1 x 15 array in the corresponding column. 
