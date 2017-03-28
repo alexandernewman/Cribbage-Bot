@@ -72,9 +72,9 @@ class CardSelection {
 
     }
 
-    private void flush(CardSelection cards) {
-        for (int i = 0; i < 15; i++) { //For every combo
-            String[] combo = this.subsets[i]; //Get combo
+    private void flush() {
+        for (int i = 0; i < subsets.length; i++) { //For every combo
+            String[] combo = subsets[i]; //Get combo
             char firstsuit = combo[0].charAt(1); //Get first suit; eg. D H C S
             String firstsuitstring = Character.toString(firstsuit);
             int numsame = 0;
@@ -87,13 +87,13 @@ class CardSelection {
             if (numsame == 4) {
                 int x = 0;
                 /* Adds potential for cut card matching suit*/
-                for (String s : cards.cutcombos) {
+                for (String s : cutcombos) {
                     String[] val = s.split("");
                     if (val[1].equals(firstsuitstring)) {
                         x += 1;
                     }
                 }
-                double y = 1.0 * x / 46;
+                double y = 1.00 * x / 46;
                 score[i] += 4 + y;
             }
         }
@@ -112,9 +112,40 @@ class CardSelection {
         }
     }
 
-    private void fifteen(CardSelection cards) {
-        for (int i = 0; i < cards.subsets.length - 1; i++) { // for all potential 4-card hands
-            String[] j = cards.subsets[i]; //Get cards
+    private float fifteenchecker(ArrayList<Integer> nums) {
+        ArrayList<Integer> vals = new ArrayList<>();
+        for (int ind : nums) {
+            vals.add(ind);
+        }
+        float fifteentotal = (float) 0.00;
+
+        if (nums.get(0) + nums.get(1) + nums.get(2) + nums.get(3) + nums.get(4) == 15) {
+            return 2;
+        }
+
+        for (int s = 0; s < nums.size(); s++) {
+            for (int t = s + 1; t < nums.size(); t++) {
+                for (int u = t + 1; u < nums.size(); u++) {
+                    for (int v = u + 1; v < nums.size(); v++) {
+                        if (nums.get(s) + nums.get(t) + nums.get(u) + nums.get(v) == 15) {
+                            fifteentotal += 2;
+                        }
+                    }
+                    if (nums.get(s) + nums.get(t) + nums.get(u) == 15) {
+                        fifteentotal += 2;
+                    }
+                }
+                if (nums.get(s) + nums.get(t) == 15) {
+                    fifteentotal += 2;
+                }
+            }
+        }
+        return fifteentotal;
+    }
+
+    private void fifteen() {
+        for (int i = 0; i < subsets.length; i++) { // for all potential 4-card hands
+            String[] j = subsets[i]; //Get cards
 
             ArrayList<Integer> nums = new ArrayList<>();
             /* Converts Face/ace cards to correct numeric values*/
@@ -123,52 +154,30 @@ class CardSelection {
             }
 
             /* Takes into account cut card */
-            for (String x : cards.cutcombos) {
-                double total = 0.0;
+            for (String x : cutcombos) {
+                float total = (float) 0.00;
                 /* Same conversion for cut card */
-                nums.add(fifteensplit(x));
-
-                if (nums.get(0) + nums.get(1) + nums.get(2) + nums.get(3) + nums.get(4) == 15) {
-                    total += 2;
-                }
-
-                /** Rewrite to be more like pairs */
-
-                for (int s = 0; s < nums.size(); s++) {
-                    for (int t = s + 1; t < nums.size(); t++) {
-                        for (int u = t + 1; u < nums.size(); u++) {
-                            for (int v = u + 1; v < nums.size(); v++) {
-                                if (nums.get(s) + nums.get(t) + nums.get(u) + nums.get(v) == 15) {
-                                    total += 2;
-                                }
-                            }
-                            if (nums.get(s) + nums.get(t) + nums.get(u) == 15) {
-                                total += 2;
-                            }
-                        }
-                        if (nums.get(s) + nums.get(t) == 15) {
-                            total += 2;
-                        }
-                    }
-                }
-                score[i] += 1.0 * (total / 46);
+                int val = fifteensplit(x);
+                nums.add(val);
+                total += fifteenchecker(nums);
+                score[i] += total / 46;
+                nums.remove((Object) val);
             }
         }
     }
-
+    
     private String pairsplit(String card) {
         String[] valarray = card.split("");
         return valarray[0];
     }
 
-    private int pairchecker(ArrayList<String> nums) {
+    private float pairchecker(ArrayList<String> nums) {
 
-        /*Mayyyyyybe a problem if theres a pair and then a 3 of a kind --- check later */
         ArrayList<String> vals = new ArrayList<>();
         for (String ind : nums) {
             vals.add(ind);
         }
-        int pairtotal = 0;
+        float pairtotal = (float) 0.00;
         for (int s = 0; s < vals.size(); s++) {
             String x = vals.get(s);
             for (int t = s + 1; t < vals.size(); t++) {
@@ -178,10 +187,10 @@ class CardSelection {
                     for (int u = t + 1; u < vals.size(); u++) {
                         String z = vals.get(u);
                         if (vals.get(s).equals(vals.get(u))) {
-                            pairtotal += 1;
+                            pairtotal += 4;
                             for (int v = u + 1; v < vals.size(); v++) {
                                 if (vals.get(s).equals(vals.get(v))) {
-                                    return 4; //No other pairs can exist if 4 of a kind
+                                    return 12; //No other pairs can exist if 4 of a kind
                                 }
                             }
                             vals.remove(z);
@@ -190,35 +199,42 @@ class CardSelection {
                     }
                     vals.remove(x);
                     vals.remove(y);
-                    for (int first = 0; first < vals.size(); first++) {
-                        for (int sec = first + 1; sec < vals.size(); sec++) {
-                            if (vals.get(first).equals(vals.get(sec))) {
-                                pairtotal += 2;
+                    if (vals.size() == 3) {
+                        if (vals.get(0).equals(vals.get(1)) || vals.get(0).equals(vals.get(2)) || vals.get(1).equals(vals.get(2))) {
+                            pairtotal += 2;
+                            if (vals.get(2).equals(vals.get(1)) && vals.get(2).equals(vals.get(0))) {
+                                pairtotal += 1;
                             }
+
                         }
-                        break;
+                    } else if (vals.size() == 2) {
+                        if (vals.get(0).equals(vals.get(1))) {
+                            pairtotal += 2;
+                        }
                     }
+                    return pairtotal;
                 }
             }
         }
         return pairtotal;
     }
 
-    private void pairs(CardSelection cards) {
-        for (int i = 0; i < cards.subsets.length - 1; i++) { // for all potential 4-card hands
-            String[] j = cards.subsets[i]; //Get cards
+    private void pairs() {
+        for (int i = 0; i < subsets.length; i++) { // for all potential 4-card hands
+            String[] j = subsets[i]; //Get cards
             ArrayList<String> values = new ArrayList<>();
 
             for (String z : j) {
                 values.add(pairsplit(z));
             }
-            for (String x : cards.cutcombos) { //Adds cut card
-                double total = 0.0;
+            for (String x : cutcombos) { //Adds cut card
+                float total = (float) 0.00;
                 /* Same conversion for cut card */
                 String val = pairsplit(x);
                 values.add(val);
-
                 total += pairchecker(values);
+                score[i] += total / 46;
+                values.remove(val);
 
             }
         }
@@ -242,46 +258,82 @@ class CardSelection {
         }
     }
 
-    private int runchecker(ArrayList<Integer> nums) {
+    private float runchecker(ArrayList<Integer> nums) {
         /* Not finished; still need to account for order*/
         ArrayList<Integer> vals = new ArrayList<>();
         for (int ind : nums) {
             vals.add(ind);
         }
-        int runtotal = 0;
-        for (int s = 0; s < vals.size(); s++) {
-            int x = vals.get(s);
-            for (int t = s + 1; t < vals.size(); t++) {
-                int y = vals.get(t);
-                if (x - 1 == y || x + 1 == y) {
-                    int lowest = x;
-                    int highest = y;
-                    if (x > y) {
-                        lowest = y;
-                        highest = x;
+        float runtotal = (float) 0.00;
+        ArrayList straight = new ArrayList();
+        for (int r = 0; r < vals.size(); r++) {
+            int a = vals.get(r);
+            for (int s = 0; s < vals.size(); s++) {
+                if (r != s) {
+                    int b = vals.get(s);
+                    int lowest = a;
+                    int highest = b;
+                    if (a > b) {
+                        lowest = b;
+                        highest = a;
                     }
-                    for (int u = t + 1; u < vals.size(); u++) {
-                        int z = vals.get(u);
-                        if (lowest - 1 == z || highest + 1 == z) {
-                            if (z < lowest) {
-                                lowest = z;
-                            } else {
-                                highest = z;
-                            }
-                            runtotal += 3;
-                            for (int v = u + 1; v < vals.size(); v++) {
-                                int alpha = vals.get(v);
-                                if (lowest - 1 == alpha || highest + 1 == alpha) {
-                                    if (alpha < lowest) {
-                                        lowest = z;
-                                    } else {
-                                        highest = alpha;
-                                    }
-                                    runtotal += 1;
-                                    if (v != vals.size() - 1 && (lowest - 1 == vals.get(v + 1) || highest + 1 == vals.get(v + 1))) {
-                                        return 5;
+                    for (int t = 0; t < vals.size(); t++) {
+                        if (t != r && t != s) {
+                            int c = vals.get(t);
+                            if ((lowest - 1 == c || highest + 1 == c) && highest - lowest == 1) {
+                                if (c < lowest) {
+                                    lowest = c;
+                                } else if (c > highest) {
+                                    highest = c;
+                                }
+                                straight.add(a);
+                                straight.add(b);
+                                straight.add(c);
+                                runtotal += 3;
+                                int prev = 0;
+                                for (int v = 0; v < vals.size(); v++) {
+                                    if (v != t && v != r && v != s) {
+                                        int d = vals.get(v);
+                                        if (lowest - 1 == d || highest + 1 == d) {
+                                            straight.add(d);
+                                            if (d < lowest) {
+                                                lowest = d;
+                                            } else {
+                                                highest = d;
+                                            }
+                                            runtotal += 1;
+                                            for (int u = 0; u < vals.size(); u++) {
+                                                if (u != t && u != r && u != s && u != v) {
+                                                    if ((lowest - 1 == vals.get(u) || highest + 1 == vals.get(u))) {
+                                                        runtotal = 5;
+                                                        return runtotal;
+                                                    }
+                                                    if (straight.contains(vals.get(u))) {
+                                                        runtotal += 4;
+                                                    }
+                                                    if (d == lowest) {
+                                                        lowest++;
+                                                    } else if (d == highest) {
+                                                        highest--;
+                                                    }
+                                                    return runtotal;
+                                                }
+                                            }
+                                        } else if (straight.contains(d)) {   //This is in the right place
+                                            runtotal += 3;
+                                            if (d != prev && prev != 0) {
+                                                runtotal += 3;
+                                            }
+                                            prev = d;
+                                        }
                                     }
                                 }
+                                if (c == highest) {
+                                    highest--;
+                                } else if (c == lowest) {
+                                    lowest++;
+                                }
+                                return runtotal;
                             }
                         }
                     }
@@ -291,10 +343,9 @@ class CardSelection {
         return runtotal;
     }
 
-
-    private void runs(CardSelection cards) {
-        for (int i = 0; i < cards.subsets.length - 1; i++) { // for all potential 4-card hands
-            String[] j = cards.subsets[i]; //Get cards
+    private void runs() {
+        for (int i = 0; i < subsets.length; i++) { // for all potential 4-card hands
+            String[] j = subsets[i]; //Get cards
 
             ArrayList<Integer> nums = new ArrayList<>();
             /* Converts Face/ace cards to correct numeric values*/
@@ -303,13 +354,13 @@ class CardSelection {
             }
 
             /* Takes into account cut card */
-            for (String x : cards.cutcombos) {
-                double total = 0.0;
+            for (String x : cutcombos) {
+                float total = (float) 0.00;
                 /* Same conversion for cut card */
                 int val = runsplit(x);
                 nums.add(val);
                 total += runchecker(nums);
-                score[i] += 1.0 * (total / 46);
+                score[i] += total / 46;
 
                 /** Note: without casting, Java removes corresponding index! So subtle!*/
                 nums.remove((Object) val);
@@ -317,10 +368,46 @@ class CardSelection {
         }
     }
 
-    private void findscore(){
+    private float nobchecker(ArrayList<Integer> vals, String l) {
+        float nobs =(float) 0.00;
+     for (String x : cutcombos) {
+        for ( int y : vals) {
+            if (x.charAt(1) == l.charAt(y))
+                 nobs += 1;
+        }
+        }
+        return nobs;
+    }
+
+    private void nobs() {
+        for (int i = 0; i < subsets.length; i++) {
+             String[] j = subsets[i]; //Get cards
+             String l = new String();
+            boolean contains = false;
+             ArrayList<Integer> vals = new ArrayList<>();
+             for (String k : j){
+                 l += k;
+                 if (k.contains("J")) {
+                     contains = true;
+                     vals.add(l.indexOf(k) + 1);
+                 }
+             }
+             float total = (float) 0.00;
+             if (contains) {
+                 total += 1 + nobchecker(vals, l);
+             }
+             total = total / 46;
+             score[i] += total;
+
+        }
+    }
+
+    private void findscore() {
         int maxIndex = 0;
         for (int i = 1; i < score.length; i++) {
             int newnumber = i;
+            String[] testarray = subsets[i];
+            float testnum = score[newnumber];
             if (score[newnumber] > score[maxIndex]) {
                 maxIndex = i;
             }
@@ -328,25 +415,31 @@ class CardSelection {
 
         StringBuilder builder = new StringBuilder();
 
-        for (String x : subsets[maxIndex]){
+        for (String x : subsets[maxIndex]) {
             if (builder.length() != 0) {
                 builder.append(", ");
             }
             builder.append(x);
         }
         System.out.print(builder);
+        System.out.println();
     }
 
-    public static void main(String[] args) {
-        String[] x = {"2H", "3C", "4S", "7S", "8C", "AC"};
-        CardSelection init = new CardSelection(x);
 
-        // TODO: reformat functions to not take init is arg
-        init.flush(init); //Special case
-        init.fifteen(init); //checks how each hand adds up to 15- average
-        init.pairs(init);
-        //init.runs(init);
+    public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+        String[] x = {"3H", "4S", "6D", "9H", "9S", "JD"};
+        CardSelection init = new CardSelection(x);
+        //TODO: Make this faster by doing for loop here instead of in each function
+        init.flush();
+        init.fifteen(); 
+        init.pairs();
+        init.runs();
+        init.nobs();
         init.findscore();
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+        System.out.println(totalTime);
     }
 
 }
