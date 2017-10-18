@@ -362,7 +362,7 @@ class CardSelection {
                 total += runchecker(nums);
                 score[i] += total / 46;
 
-                /** Note: without casting, Java removes corresponding index! So subtle!*/
+                /** Note: without casting, Java removes corresponding index*/
                 nums.remove((Object) val);
             }
         }
@@ -427,7 +427,7 @@ class CardSelection {
 
 
     public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
+        //long startTime = System.currentTimeMillis();
         String[] x = {"3H", "4S", "6D", "9H", "9S", "JD"};
         CardSelection init = new CardSelection(x);
         //TODO: Make this faster by doing for loop here instead of in each function
@@ -437,9 +437,9 @@ class CardSelection {
         init.runs();
         init.nobs();
         init.findscore();
-        long endTime = System.currentTimeMillis();
-        long totalTime = endTime - startTime;
-        System.out.println(totalTime);
+        //long endTime = System.currentTimeMillis();
+        //long totalTime = endTime - startTime;
+        //System.out.println(totalTime);
     }
 
 }
