@@ -1,6 +1,6 @@
 # Cribbage-Bot
 Cribbage is a card game that primarily relies on selecting an optimal
-4-card hand from 6 inital cards.  My roommate and I play it on mobile 
+4-card hand from 6 inital cards.  My roommate and I play the game on a mobile app 
 a lot, and we both feel that the app's AI isn't very good.  We want to 
 make something that can beat the machine.
 
